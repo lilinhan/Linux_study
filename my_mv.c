@@ -3,7 +3,7 @@
  *
  *       Filename:  my_mv.c
  *
- *    Description:  move the file by system renmae function
+ *    Description:  renmae the file by system renmae function
  *
  *        Version:  1.0
  *        Created:  07/14/2014 09:35:22 PM
