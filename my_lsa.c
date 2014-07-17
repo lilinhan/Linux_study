@@ -29,7 +29,7 @@
 #include <grp.h>
 #include <pwd.h>
 
-#define MAX_LINE  60
+#define MAX_LINE  50
 
 void my_err( const char * err_string , int line )
 {
@@ -43,42 +43,62 @@ int main(int argc, char *argv[])
 	DIR * dir;
 	struct dirent *ptr,*ptr1;
 	struct stat buf;
-	int sure_len = 0,i, MAX_FILE_NAME = 0,LAST_LETTER;
-
+	int sure_len = 0 , i , j , m, n, MAX_FILE_NAME = 0,LAST_LETTER,NUMBER_OF_FILE = 0;
+	//测试文件夹里面文件的个数，以及最长文件名字的长度
 	if(( dir = opendir(argv[1])) == NULL )  {
 		perror("opendir");
 		return 0;
 	}
-
 	while((ptr1 = readdir(dir)) != NULL )  {
 		if( MAX_FILE_NAME < strlen(ptr1->d_name))   {
 			MAX_FILE_NAME = strlen(ptr1->d_name);
 		}
+	NUMBER_OF_FILE++;
 	}
 	closedir(dir);
 
+	
 
+	char FILE_NAME[NUMBER_OF_FILE][MAX_FILE_NAME+1],FILE[MAX_FILE_NAME+1];//定义二维字符数组，写入所有文件的名字
+
+	//将文件名字写入数组中
 	if(( dir = opendir(argv[1])) == NULL )  {
 		perror("opendir");
 		return 0;
 	}
-	while (( ptr = readdir(dir)) != NULL )  {
-		i = 0;
-		sure_len += strlen(ptr->d_name);
+
+
+	i = 0;
+	while(( ptr = readdir(dir)) != NULL )  {
+		strcpy(FILE_NAME[i],ptr->d_name);
+		i++;
+	}
+	closedir(dir);
+	
+	for( m = 0 ; m < NUMBER_OF_FILE ; m++ )
+	      for( n = 0 ; n < NUMBER_OF_FILE-1 ; n++ )  
+	      	if( strcmp(FILE_NAME[n] , FILE_NAME[n+1]) > 0 )  {
+			strcpy(FILE , FILE_NAME[n]);
+			strcpy(FILE_NAME[n],FILE_NAME[n+1]);
+			strcpy(FILE_NAME[n+1],FILE);
+		}
+	j = 0;
+	while( j < i )  {
+		m = 0;
+		sure_len += strlen(FILE_NAME[j]);
 		if( sure_len >= MAX_LINE )  {
 			printf("\n");
 			sure_len = 0;
 		}
-		printf("%s",ptr->d_name );
-		while( i < (MAX_FILE_NAME - strlen(ptr->d_name)) )  {
+		printf("%s",FILE_NAME[j] );
+		while( m < (MAX_FILE_NAME - strlen(FILE_NAME[j])) )  {
 			printf(" ");
-			i++;
+			m++;
 		}
 		printf(" ");
-	}
+		j++;
+	}	
 	
-
-	closedir(dir);
 	printf("\n");
 	return EXIT_SUCCESS;
 }
