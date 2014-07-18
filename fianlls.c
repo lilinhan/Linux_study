@@ -282,31 +282,33 @@ int ls_r(char * argv)
 	DIR * dir;
 	struct dirent *ptr, *ptr1;
 	struct stat buf;
-
-//	ls(argv);
-//	printf("\n\n");
+	char path[128] = {0};
 
 
+
+	getcwd(path, 128);
+	printf("path:%s  \targv:%s\n", path, argv);
 	if((dir = opendir(argv)) == NULL )  {
 		perror("opendir");
 		exit(1);
 	}
+	chdir(argv);
 	while((ptr1 = readdir(dir)) != NULL )  {
 		lstat(ptr1->d_name,&buf);
 		if(S_ISDIR(buf.st_mode))  {
 			if(strcmp(ptr1->d_name,".") == 0 || strcmp(ptr1->d_name,"..") == 0 ) {
 				continue;
 			}
-			printf("%s ",ptr1->d_name);
-			chdir(ptr1->d_name);
+			printf("%s \n",ptr1->d_name);
 			ls_r(ptr1->d_name);
+			printf("\n");
 		}
 		else  {
 			printf("%s  ",ptr1->d_name);
 		}
 	}
 	closedir(dir);
-
+	chdir("..");
 	return 0;
 }
 
