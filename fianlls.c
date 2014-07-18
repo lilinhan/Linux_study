@@ -282,12 +282,8 @@ int ls_r(char * argv)
 	DIR * dir;
 	struct dirent *ptr, *ptr1;
 	struct stat buf;
-	char path[128] = {0};
 
-
-
-	getcwd(path, 128);
-	printf("path:%s  \targv:%s\n", path, argv);
+	ls(argv);
 	if((dir = opendir(argv)) == NULL )  {
 		perror("opendir");
 		exit(1);
@@ -296,15 +292,14 @@ int ls_r(char * argv)
 	while((ptr1 = readdir(dir)) != NULL )  {
 		lstat(ptr1->d_name,&buf);
 		if(S_ISDIR(buf.st_mode))  {
-			if(strcmp(ptr1->d_name,".") == 0 || strcmp(ptr1->d_name,"..") == 0 ) {
+			if( strcmp(ptr1->d_name,".") == 0 || strcmp(ptr1->d_name,"..") == 0) {
 				continue;
 			}
-			printf("%s \n",ptr1->d_name);
+			if(ptr1->d_name[0] != '.')  {
+			printf("\n%s:\n",ptr1->d_name);
 			ls_r(ptr1->d_name);
-			printf("\n");
-		}
-		else  {
-			printf("%s  ",ptr1->d_name);
+			printf("\n\n");
+			}
 		}
 	}
 	closedir(dir);
@@ -322,7 +317,7 @@ int main(int argc, char * argv[])
 		flag = 0;
 
 	}
-	else if( argc == 2 )  { 
+	else if( 2 == argc )  { 
 		if( argv[1][0] == '-')   {
 			if( argv[1][1] == 'a' )  {
 		      		flag = 1;
@@ -338,6 +333,20 @@ int main(int argc, char * argv[])
 			}
 		}
 	}
+	else if( 3 == argc )  {
+			if( argv[1][1] == 'a' )  {
+		      		flag = 4;
+		        }
+			else if( argv[1][1] == 'l' )  {
+				flag = 5;
+			}
+			else if( argv[1][1] == 'R' )  {
+				flag = 6;
+			}
+			else  {
+				printf("my_ls <options> -a -l -R <path>");
+			}
+	}
 	else  {
 		printf("my_ls <options>");
 	}
@@ -347,6 +356,9 @@ int main(int argc, char * argv[])
 		case 1:ls_a(add_directory);break;
 		case 2:ls_l(add_directory);break;
 		case 3:ls_r(add_directory);break;
+		case 4:ls_a(argv[2]);break;
+		case 5:ls_l(argv[2]);break;
+		case 6:ls_r(argv[2]);break;
 	};
 	
 	return 0 ;
