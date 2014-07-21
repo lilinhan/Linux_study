@@ -1,0 +1,56 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  my_lsr.c
+ *
+ *    Description:  
+ *
+ *        Version:  1.0
+ *        Created:  07/18/2014 10:00:40 AM
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  李林翰, lilinhan1303@gmail.com    693465363@qq.com
+ *        Company:  Class 1303 of  Xiyou Linux Group
+ *
+ * =====================================================================================
+ */lude <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <dirent.h>
+#include <string.h>
+#include <sys/stat.h>
+/**
+ *  * 将数据的目录和深度一起传进来
+ *   */
+void printfdir(char *dir, int depth) {
+
+    DIR * dp; //对目录进行操作
+    struct dirent *entry; //对目录的数据项进行操作
+    struct stat statbuf;  //用来记录状态信息
+    if ((dp = opendir(dir)) != NULL) {
+            fprintf(stderr, "不能打开目录:%s\n", dir);
+        }
+    chdir(dir); //将当前的工作目重定向
+    while ((entry = readdir(dp)) != NULL) { //使用while来对整个目录进行遍历
+            lstat(entry->d_name, &statbuf);
+            if (S_ISDIR(statbuf.st_st_mode)) {     //判断是否是目录，如果是目录的话，就递归调用进入下一层
+	                if (strcmp(".", entry->d_name) == 0
+						                    || strcmp("..", entry->d_name) == 0) {
+			                continue;
+			            }
+	                printf("%*s%s/\n", depth, " ", entry->d_name);
+	                printfdir(entry->d_name, depth + 4);
+	            } else {
+		                printf("%*s%s/\n", depth, " ", entry->d_name);
+		            }
+    
+        }
+    chdir(".."); //如果已经浏览完，将程序当前的工作目录定为父目录
+    closedir(dp);//关闭目录流
+}
+
+int main(void) {
+    printfdir("/home/fjnucse/test",0);
+    return EXIT_SUCCESS;
+}
