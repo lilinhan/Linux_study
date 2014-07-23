@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  Array_insert.c
+ *       Filename:  creat_thread.c
  *
- *    Description: 数组中随意的i处插入一个数
+ *    Description:  
  *
  *        Version:  1.0
- *        Created:  07/21/2014 09:04:50 PM
+ *        Created:  07/23/2014 03:57:25 PM
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -21,29 +21,40 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
+
+int * thread(void * arg)
+{
+	pthread_t tid1;
+	tid1 = pthread_self();
+	printf("tid1 = %d\n",tid1);
+	return NULL;
+}
 
 int main(int argc, char *argv[])
 {
+	pthread_t tid2;
 
-	int a[20] = {1,2,3,4,5,6,7,8};
-	int i = 0,k = 7,j;
-	
-	for(  ; k > 2 ; k-- )  {
-		a[k+1] = a[k];
-	}
-	a[k+1] = 11;
+	printf("i am master pthread:%d\n",pthread_self());
 
-	for ( i = 0 ; i < 20; i++ ) {
-	printf("%d   ",a[i]);
+	tid2 = pthread_create(&tid2, NULL ,(void *)thread , NULL );
+	if( tid2 != 0 )  {
+		perror("pthread creation is failed!\n");
+		exit(0);
 	}
-	printf("\n");
-	k = 3;
-	for( ; k < 5 ; k++ )   {
-		a[k] = a[k+1];
-	}  
-	for ( i = 0 ; i < 20; i++ ) {
-	printf("%d   ",a[i]);
-	}
+	sleep(1);
 	return EXIT_SUCCESS;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
