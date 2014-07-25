@@ -27,10 +27,100 @@
 #include <fcntl.h>
 #include <dirent.h>
 
+void find_command(char ** argv1)  
+{
+	DIR * dir;
+	struct dirent * ptr;
+	pid_t pid;
+
+	pid = vfork();
+
+
+	if( pid == 0 )  {
+		if((dir = opendir("/usr/bin")) == NULL )  {
+			perror("opendir!\n");
+			exit(0);
+		}
+	
+
+		while((ptr = readdir(dir)) != NULL )  {
+			if(strcmp(ptr->d_name,argv1[0]) == 0 )  {
+				if(execvp(argv1[0],argv1) < -1)
+				      perror("error!\n");
+					}
+
+		}
+	exit(0);
+	}
+}
+
+int chose(int count,char ** argv1)
+{
+	int flag = 5,i;
+
+	if( strcmp( argv1[0],"cd")  == 0 )  {
+		flag = 1;
+	}
+	for( i = 0 ; i < count ; i++ )   {
+		if( strcmp(argv1[i],">") == 0 ) 
+		      flag = 2;
+		if( strcmp(argv1[i],"|") == 0 ) 
+		      flag = 3;
+	}
+
+	return flag;
+}
+
+void change_dir(char ** argv1)
+{
+	char buf[100];
+	if(chdir(argv1[1]) < 0)  {
+		perror("chdir!\n");
+	}
+
+	getcwd(buf,100);
+	printf("%s\n",buf);
+
+}
+
+void outputdir(int count,char ** argv1)
+{
+	int i,j,num;
+	int fd;
+	char * argv[10];
+	pid_t pid;
+
+/*	for( i = 0 , j = 0 ; i < count ; i++ )  {
+		if()
+	}
+*/	
+
+	for( i = 0 , j = 0; i < count ; i++) {
+		if(strcmp(argv1[i],">") == 0 )  {
+		 	num = i+1;
+			break;
+		}
+		argv[j] = argv1[i];
+		j++;
+	}
+	argv[j] = NULL;
+	if((fd = open(argv1[num],O_EXCL | O_TRUNC | O_CREAT , 0644)) < 0 )  {
+		perror("error!\n");
+	}
+	dup2(fd , 1);
+	pid = vfork();
+	if( pid == 0 )  {
+		if(execvp(argv1[0],argv) == -1)  {
+			exit(-1);
+		}
+		exit(0);
+	}
+}
+
 int main()
 {
 	char argv[15][100],shell_order[100],*argv1[15];
-	int i,j,k,count = 0;
+	int i,j,k,count = 0,flag,fd;
 	DIR * dir;
 	struct dirent * ptr;
 	pid_t pid;
@@ -59,22 +149,21 @@ int main()
 		argv1[i] = argv[i];
 	}
 	argv1[i] = NULL;
+	
+	printf("%d\n",count);
+	
+	flag = chose(count,argv1);
+	printf("%d\t\n\n\n",flag);
 
+	switch(flag)  {
+		case 1:change_dir(argv1);break;
+		case 2:outputdir(count,argv1);break;
+		default:find_command(argv1);break;
 
-	pid = vfork();
-	if( pid == 0 )  {
-		if((dir = opendir("/usr/bin")) == NULL )  {
-			perror("opendir!\n");
-			exit(0);
-		}
-		while((ptr = readdir(dir)) != NULL )  {
-			if(strcmp(ptr->d_name,argv[0]) == 0 )  {
-				if(execvp(argv[0],argv1) < -1)
-				      perror("error!\n");
-			}
-		}
-		
-		}
+	}
+
+//	find_command(argv1);
+
 	}
 	return EXIT_SUCCESS;
 }
