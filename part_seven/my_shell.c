@@ -33,25 +33,27 @@ void find_command(char ** argv1)
 	struct dirent * ptr;
 	pid_t pid;
 
-	pid = vfork();
+//	pid = vfork();
 
+//	if( pid == 0 )  {
 
-	if( pid == 0 )  {
-		if((dir = opendir("/usr/bin")) == NULL )  {
-			perror("opendir!\n");
-			exit(0);
-		}
+	if((dir = opendir("/usr/bin")) == NULL )  {
+		perror("opendir!\n");
+		exit(0);
+	}
 	
 
-		while((ptr = readdir(dir)) != NULL )  {
-			if(strcmp(ptr->d_name,argv1[0]) == 0 )  {
-				if(execvp(argv1[0],argv1) < -1)
-				      perror("error!\n");
-					}
-
+	while((ptr = readdir(dir)) != NULL )  {
+		if(strcmp(ptr->d_name,argv1[0]) == 0 )  {
+			execvp(argv1[0], argv1);
+			exit(0);
+//			if(execvp(argv1[0],argv1) < 0)
+//			      perror("error!\n");
+//			printf("\nwhye\n");
+//			exit(0);
 		}
-	exit(0);
 	}
+	printf("\nok\n");
 }
 
 int chose(int count,char ** argv1)
@@ -104,17 +106,18 @@ void outputdir(int count,char ** argv1)
 		j++;
 	}
 	argv[j] = NULL;
-	if((fd = open(argv1[num],O_EXCL | O_TRUNC | O_CREAT , 0644)) < 0 )  {
+	if((fd = open(argv1[num],O_EXCL | O_TRUNC | O_CREAT | O_RDWR , 0666)) < 0 )  {
 		perror("error!\n");
 	}
+
+//	pid = vfork();
+//	if( pid == 0 )  {
 	dup2(fd , 1);
-	pid = vfork();
-	if( pid == 0 )  {
 		if(execvp(argv1[0],argv) == -1)  {
 			exit(-1);
 		}
 		exit(0);
-	}
+//	}
 }
 
 int main()
@@ -155,15 +158,18 @@ int main()
 	flag = chose(count,argv1);
 	printf("%d\t\n\n\n",flag);
 
+	pid = vfork();
+	if(pid ==0 )  {
 	switch(flag)  {
 		case 1:change_dir(argv1);break;
 		case 2:outputdir(count,argv1);break;
 		default:find_command(argv1);break;
 
 	}
-
+	exit(0);
+	}
 //	find_command(argv1);
-
+wait(NULL);
 	}
 	return EXIT_SUCCESS;
 }
