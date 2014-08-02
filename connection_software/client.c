@@ -29,14 +29,14 @@
 #include <errno.h>
 
 #define MYPORT 4058
-#define SERVICE_IP "222.24.51.100"
+#define SERVICE_IP "222.24.51.8"
 //#define SERVICE_IP "127.0.0.1"
 
 int main(int argc, char *argv[])
 {
-	int client_fd , socket_fd  ;
+	int client_fd , socket_fd  , k;
 	struct sockaddr_in service_addr , client_addr;
-	char recv_buf[1000];
+	char recv_buf[1000],send_buf[1000];
 	int size_of_data;
 
 
@@ -56,20 +56,35 @@ int main(int argc, char *argv[])
 		exit(1);
 	}	
 
-//	while(1)  {
 	if((connect(socket_fd , (struct sockaddr*)(&service_addr) , sizeof(struct sockaddr))) == -1 )  {
 		//fprintf(stderr,"connect erro\n",strerror(errno));
 		perror ("connect error ") ;
 		exit(0);
 	}
-	printf ("Connected \n") ;
-	if((size_of_data = recv(socket_fd , recv_buf , sizeof(recv_buf) , 0 )) < 0  )  {
-		perror("recv\n");
-		exit(1);
-	}
-	recv_buf[size_of_data] = '\0';
+	printf ("Connected \n\n\n") ;
 
-	printf("%s\n",recv_buf);
-//	}
+	if(!fork())  {
+		while(1)  {
+			if((size_of_data = recv(socket_fd , recv_buf , sizeof(recv_buf) , 0 )) < 0  )  {
+				perror("recv\n");
+				exit(1);
+			}
+			recv_buf[size_of_data] = '\0';
+			printf("service:\t");
+			printf("%s\n",recv_buf);
+
+			printf("my words :\t");
+			gets(send_buf);
+			if(send( socket_fd , send_buf , sizeof(send_buf) , 0 ) < 0 )  {
+				perror("send\n");
+				exit(1);
+			}
+
+
+		}
+
+	}	
+	wait(NULL);
+	exit(0);
 	return EXIT_SUCCESS;
 }

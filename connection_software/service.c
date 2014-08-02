@@ -36,9 +36,10 @@ int main(int argc, char *argv[])
 {
 
 	int sock_fd , client_fd , new_fd;
-	int client_len;
-	char send_sentence[1000];
+	int client_len,k,sizeof_data;
+	char send_sentence[1000],receive_sentence[1000];
 	struct sockaddr_in service_addr , client_addr;
+	pid_t pid;
 
 //	创建一个套接字
 	if(( sock_fd = socket(AF_INET , SOCK_STREAM , 0 )) < 0 )   {
@@ -70,21 +71,33 @@ int main(int argc, char *argv[])
 			perror("accept\n");
 			exit(0);
 		}
-		printf("accept a new client connection , ip:%s",inet_ntoa(client_addr.sin_addr));
+		printf("accept a new client connection , ip:%s\n",inet_ntoa(client_addr.sin_addr));
 
+	if((pid = fork())== 0 )  {
+		while(1)  {
 //	给程序端发送数据
-		if(!fork())  {
-	      		printf("my sentence:");
-			scanf("%s",send_sentence);
-		      if(send(client_fd,send_sentence,sizeof(send_sentence), 0 ) < 0 )  {
+	      		printf("my sentence:\t");
+			gets(send_sentence);
+		      if( k = (send(client_fd,send_sentence,sizeof(send_sentence), 0 )) < 0 )  {
 	      			perror("send\n");
 				exit(0);
 		      }
-		close(client_fd);
-		exit(0);
+
+		      //从程序端收数据
+		      printf("client :\t");
+		      if((sizeof_data = recv(client_fd,receive_sentence,sizeof(receive_sentence),0)) < 0 )   {
+		      		perror("recv\n");
+				exit(0);
+		      }
+		      receive_sentence[sizeof_data+1] = '\0';
+		      printf("%s\n",receive_sentence);
+
 		}
+		close(client_fd);
 	}
-	while(waitpid(NULL));
+	wait(NULL);
+	exit(0);
+	}
 	return EXIT_SUCCESS;
 }
 
